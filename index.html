@@ -5,25 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Portal GTE - Estándar HDC 2026</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f4f8; padding: 20px; color: #1a365d; }
-        .container { max-width: 700px; background: white; padding: 40px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); margin: auto; }
-        h1 { color: #003366; border-bottom: 3px solid #FF6600; padding-bottom: 10px; margin-top: 0; font-size: 24px; }
-        .header-info { margin-bottom: 30px; font-size: 14px; color: #64748b; text-transform: uppercase; letter-spacing: 1px; }
+        body { font-family: 'Segoe UI', sans-serif; background-color: #f0f4f8; padding: 20px; color: #1a365d; display: flex; justify-content: center; }
+        .container { max-width: 700px; width: 100%; background: white; padding: 40px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
+        h1 { color: #003366; border-bottom: 3px solid #FF6600; padding-bottom: 10px; margin: 0 0 10px 0; font-size: 24px; }
+        .header-info { margin-bottom: 30px; font-size: 13px; color: #64748b; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid #e2e8f0; padding-bottom: 15px; }
         .input-group { margin-bottom: 25px; background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0; }
         label { font-weight: bold; display: block; margin-bottom: 8px; }
         input[type="number"] { width: 100%; padding: 12px; border: 2px solid #cbd5e1; border-radius: 6px; font-size: 16px; box-sizing: border-box; }
-        
-        #area-cuestionario { margin-top: 20px; }
         .pregunta-card { background: #fff; border-left: 4px solid #FF6600; padding: 15px; margin-bottom: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); border-radius: 0 8px 8px 0; }
-        .pregunta-texto { margin: 0 0 10px 0; font-size: 15px; line-height: 1.4; }
-        select, input[type="range"] { width: 100%; padding: 8px; border-radius: 5px; border: 1px solid #cbd5e1; }
-
+        .pregunta-texto { margin: 0 0 10px 0; font-size: 15px; }
+        select { width: 100%; padding: 8px; border-radius: 5px; border: 1px solid #cbd5e1; background: white; }
         .btn-validar { background-color: #003366; color: white; padding: 16px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; font-size: 16px; transition: all 0.3s; margin-top: 20px; }
-        .btn-validar:hover { background-color: #FF6600; transform: translateY(-2px); }
-        
-        #resultado { margin-top: 25px; padding: 20px; border-radius: 10px; display: none; text-align: center; border: 2px solid transparent; }
-        .fase-alerta { background-color: #fef2f2; border-color: #fee2e2; color: #991b1b; }
-        .fase-normal { background-color: #f0fdf4; border-color: #dcfce7; color: #166534; }
+        .btn-validar:hover { background-color: #FF6600; }
+        #resultado { margin-top: 25px; padding: 20px; border-radius: 10px; display: none; text-align: center; font-family: inherit; }
+        .fase-alerta { background-color: #fef2f2; border: 2px solid #fee2e2; color: #991b1b; }
+        .fase-normal { background-color: #f0fdf4; border: 2px solid #dcfce7; color: #166534; }
     </style>
 </head>
 <body>
@@ -33,16 +29,13 @@
     <div class="header-info">SIA-GTE | Estándar de Validación HDC 2026</div>
     
     <div class="input-group">
-        <label for="edad-paciente">Edad Cronológica del Paciente:</label>
-        <input type="number" id="edad-paciente" min="9" max="17" placeholder="Ingrese edad (9-17)">
+        <label for="edad-paciente">Edad Cronológica del Paciente (9-17):</label>
+        <input type="number" id="edad-paciente" min="9" max="17" placeholder="Ingrese edad">
     </div>
 
-    <div id="area-cuestionario">
-        </div>
+    <div id="area-cuestionario"></div>
 
-    <button class="btn-validar" id="boton-validar">
-        EJECUTAR VALIDACIÓN CLÍNICA HDC 2026
-    </button>
+    <button class="btn-validar" id="boton-validar">EJECUTAR VALIDACIÓN CLÍNICA HDC 2026</button>
 
     <div id="resultado"></div>
 </div>
@@ -55,25 +48,9 @@
             { id: 1, p: "¿Te sientes triste la mayor parte del tiempo?", critico: false },
             { id: 2, p: "¿Sientes que nadie te quiere?", critico: true },
             { id: 3, p: "¿Has pensado en hacerte daño o que la vida no vale la pena?", critico: true },
-            { id: 4, p: "¿Te cuesta mucho hacer amigos o hablar con otros niños?", critico: true },
-            { id: 5, p: "¿Te preocupa mucho lo que otros piensen de ti?", critico: false },
             { id: 6, p: "¿Te sientes solo incluso cuando hay gente cerca?", critico: true },
-            { id: 7, p: "¿Sientes que tus padres no te comprenden?", critico: false },
-            { id: 8, p: "¿Te dan ganas de llorar sin una razón clara?", critico: true },
-            { id: 9, p: "¿Te sientes nervioso en la escuela?", critico: false },
             { id: 10, p: "¿Sientes que no eres bueno para nada?", critico: true },
-            { id: 11, p: "¿Te asusta el futuro o lo que pueda pasar mañana?", critico: true },
-            { id: 12, p: "¿Prefieres estar solo que jugar con otros?", critico: false },
             { id: 13, p: "¿Sientes que algo malo va a pasar pronto?", critico: true }
-        ],
-        "12-14": [
-            { id: 1, p: "Siento que mis problemas no tienen solución.", critico: true },
-            { id: 2, p: "Me siento desesperanzado respecto al futuro.", critico: true },
-            { id: 12, p: "En mi casa puedo hablar abiertamente de mis sentimientos.", critico: false }
-        ],
-        "15-17": [
-            { id: 1, p: "He perdido el interés en actividades que antes disfrutaba mucho.", critico: true },
-            { id: 2, p: "Tengo dificultades persistentes para conciliar el sueño.", critico: true }
         ]
     };
 
@@ -83,88 +60,54 @@
 
     inputEdad.addEventListener('input', () => {
         const edad = parseInt(inputEdad.value);
-        let rango = "";
-
-        if (edad >= 9 && edad <= 11) rango = "9-11";
-        else if (edad >= 12 && edad <= 14) rango = "12-14";
-        else if (edad >= 15 && edad <= 17) rango = "15-17";
-
-        if (rango) {
-            renderizarPreguntas(rango);
+        if (edad >= 9 && edad <= 11) {
+            renderizarPreguntas("9-11");
             divResultado.style.display = 'none';
+        } else if (edad > 11 && edad <= 17) {
+            areaCuestionario.innerHTML = "<p style='padding:15px; background:#f1f5f9; border-radius:8px;'>Cargando protocolo para adolescentes...</p>";
         } else {
-            areaCuestionario.innerHTML = edad ? "<p style='color:#b91c1c; background:#fee2e2; padding:10px; border-radius:5px;'>La edad ingresada está fuera del rango de atención del programa GTE.</p>" : "";
+            areaCuestionario.innerHTML = "";
         }
     });
 
     function renderizarPreguntas(rango) {
         const preguntas = bancosPreguntas[rango];
-        let html = `<h3 style="color:#003366; margin-bottom:20px;">Instrumento de Evaluación (${rango} años)</h3>`;
-        
+        let html = `<h3 style="color:#003366; margin-bottom:15px;">Validación de Indicadores (${rango} años)</h3>`;
         preguntas.forEach(pregunta => {
             html += `
                 <div class="pregunta-card">
                     <p class="pregunta-texto"><strong>${pregunta.id}.</strong> ${pregunta.p}</p>
-                    ${generarInputs(rango, pregunta)}
+                    <select class="respuesta-gte" data-id="${pregunta.id}" data-critico="${pregunta.critico}">
+                        <option value="">-- Seleccionar --</option>
+                        <option value="Si">Sí, casi siempre</option>
+                        <option value="AV">A veces</option>
+                        <option value="No">No, casi nunca</option>
+                    </select>
                 </div>`;
         });
         areaCuestionario.innerHTML = html;
-    }
-
-    function generarInputs(rango, pregunta) {
-        if (rango === "9-11") {
-            return `
-                <select class="respuesta-gte" data-id="${pregunta.id}" data-critico="${pregunta.critico}">
-                    <option value="">-- Seleccionar respuesta --</option>
-                    <option value="Si">Sí, casi siempre</option>
-                    <option value="AV">A veces</option>
-                    <option value="No">No, casi nunca</option>
-                </select>`;
-        } else {
-            const max = (rango === "12-14") ? 4 : 5;
-            return `
-                <div style="display:flex; align-items:center; gap:10px;">
-                    <span style="font-size:12px; color:#64748b;">Mínimo (1)</span>
-                    <input type="range" class="respuesta-gte" data-id="${pregunta.id}" data-critico="${pregunta.critico}" min="1" max="${max}" value="1" oninput="this.nextElementSibling.value = this.value">
-                    <output style="font-weight:bold; color:#FF6600;">1</output>
-                </div>`;
-        }
     }
 
     document.getElementById('boton-validar').addEventListener('click', () => {
         const edad = parseInt(inputEdad.value);
         const inputs = document.querySelectorAll('.respuesta-gte');
         
-        if (!edad || inputs.length === 0) {
-            alert("Por favor, ingrese la edad y complete el cuestionario.");
-            return;
-        }
+        if (!edad || inputs.length === 0) { alert("Complete los datos primero."); return; }
 
         const respuestas = Array.from(inputs).map(i => ({
             id: parseInt(i.dataset.id),
-            valor: i.tagName === 'SELECT' ? i.value : parseInt(i.value),
+            valor: i.value,
             esCritico: i.dataset.critico === "true"
         }));
 
-        // Verificación de campos vacíos para 9-11
-        if (respuestas.some(r => r.valor === "")) {
-            alert("Debe responder todas las preguntas antes de validar.");
-            return;
-        }
+        if (respuestas.some(r => r.valor === "")) { alert("Responda todas las preguntas."); return; }
 
         const fase = calcularFaseGTE(edad, respuestas);
-        
         divResultado.style.display = 'block';
         divResultado.className = (fase === "Fase 3") ? "fase-alerta" : "fase-normal";
-        divResultado.innerHTML = `
-            <div style="font-size:14px; text-transform:uppercase; margin-bottom:5px;">Resultado de Validación Clínica</div>
-            <div style="font-size:22px; font-weight:bold;">${fase}</div>
-            <div style="margin-top:10px; font-size:13px; opacity:0.8;">Protocolo HDC 2026 - Guacara Te Escucha</div>
-        `;
-        
+        divResultado.innerHTML = `<div style="font-size:14px; opacity:0.7;">RESULTADO CLÍNICO</div><div style="font-size:22px; font-weight:bold;">${fase}</div>`;
         divResultado.scrollIntoView({ behavior: 'smooth' });
     });
 </script>
-
 </body>
 </html>
