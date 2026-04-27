@@ -9,15 +9,17 @@
         body { font-family: 'Segoe UI', Tahoma, sans-serif; background-color: var(--bg); padding: 20px; color: #1e293b; display: flex; justify-content: center; }
         .container { max-width: 800px; width: 100%; background: white; padding: 40px; border-radius: 20px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); }
         h1 { color: var(--blue); border-left: 5px solid var(--orange); padding-left: 15px; margin: 0 0 10px 0; font-size: 26px; }
-        .header-tag { font-size: 12px; font-weight: bold; color: var(--slate); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 30px; display: block; }
+        .header-tag { font-size: 11px; font-weight: bold; color: var(--slate); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 30px; display: block; }
         .input-group { background: #f8fafc; padding: 20px; border-radius: 12px; border: 1px solid #e2e8f0; margin-bottom: 30px; }
         label { font-weight: 700; color: var(--blue); margin-bottom: 10px; display: block; }
-        input[type="number"] { width: 100%; padding: 12px; border: 2px solid #cbd5e1; border-radius: 8px; font-size: 18px; outline: none; }
-        .pregunta-card { background: #fff; border: 1px solid #e2e8f0; padding: 20px; margin-bottom: 15px; border-radius: 10px; }
+        input[type="number"] { width: 100%; padding: 12px; border: 2px solid #cbd5e1; border-radius: 8px; font-size: 18px; outline: none; transition: border 0.3s; box-sizing: border-box; }
+        input[type="number"]:focus { border-color: var(--orange); }
+        .pregunta-card { background: #fff; border: 1px solid #e2e8f0; padding: 20px; margin-bottom: 15px; border-radius: 10px; transition: all 0.2s; }
+        .pregunta-card:hover { border-color: var(--orange); background: #fffaf7; }
         .pregunta-texto { font-weight: 500; margin-bottom: 15px; line-height: 1.5; font-size: 15px; }
-        select, .range-input { width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; background: white; }
+        select, .range-wrapper { width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; background: white; font-size: 14px; }
         .btn-validar { background: var(--blue); color: white; padding: 18px; border: none; border-radius: 10px; cursor: pointer; font-weight: 800; width: 100%; font-size: 16px; margin-top: 25px; transition: all 0.3s; }
-        .btn-validar:hover { background: var(--orange); }
+        .btn-validar:hover { background: var(--orange); transform: translateY(-2px); box-shadow: 0 10px 15px rgba(255,102,0,0.2); }
         #resultado { margin-top: 30px; padding: 25px; border-radius: 15px; display: none; text-align: center; border: 2px solid transparent; }
         .fase-3 { background: #fef2f2; border-color: #f87171; color: #991b1b; }
         .fase-otras { background: #f0fdf4; border-color: #4ade80; color: #166534; }
@@ -28,7 +30,7 @@
 <div class="container">
     <span class="header-tag">Sistema de Inteligencia Autogestionada</span>
     <h1>Guacara Te Escucha</h1>
-    <p style="color: var(--slate); margin-bottom: 25px;">Protocolo Clínico Estandarizado HDC 2026</p>
+    <p style="color: var(--slate); margin-bottom: 25px; font-size: 14px;">Protocolo Clínico Estandarizado HDC 2026</p>
     
     <div class="input-group">
         <label for="edad-paciente">Edad del Paciente (9 a 17 años):</label>
@@ -80,22 +82,22 @@
         ],
         "15-17": [
             { id: 1, p: "He perdido el interés en hobbies que antes amaba.", critico: true },
-            { id: 2, p: "Tengo insomnio persistente.", critico: true },
-            { id: 3, p: "Siento una fatiga extrema sin causa física.", critico: true },
-            { id: 4, p: "Me invade un sentimiento de culpa o inutilidad.", critico: true },
-            { id: 5, p: "Dificultad severa para tomar decisiones simples.", critico: true },
-            { id: 6, p: "Pensamientos recurrentes sobre la muerte.", critico: true },
-            { id: 7, p: "Siento que mis movimientos o habla son más lentos.", critico: true },
-            { id: 8, p: "Cambios drásticos en mi peso o apetito.", critico: false },
+            { id: 2, p: "Tengo insomnio persistente o dificultad para dormir.", critico: true },
+            { id: 3, p: "Siento una fatiga extrema sin causa física aparente.", critico: true },
+            { id: 4, p: "Me invade un sentimiento de culpa o inutilidad constante.", critico: true },
+            { id: 5, p: "Tengo dificultad severa para tomar decisiones simples.", critico: true },
+            { id: 6, p: "He tenido pensamientos recurrentes sobre la muerte.", critico: true },
+            { id: 7, p: "Siento que mis movimientos o mi habla son más lentos.", critico: true },
+            { id: 8, p: "He notado cambios drásticos en mi peso o apetito.", critico: false },
             { id: 9, p: "Me aíslo voluntariamente de mi círculo social.", critico: false },
-            { id: 10, p: "Irritabilidad constante con familiares o amigos.", critico: false },
-            { id: 11, p: "Sensación de desesperanza profunda.", critico: false },
-            { id: 12, p: "Sensación constante de vacío emocional.", critico: false },
+            { id: 10, p: "Me siento irritable con mis familiares o amigos.", critico: false },
+            { id: 11, p: "Tengo una sensación de desesperanza profunda.", critico: false },
+            { id: 12, p: "Siento un vacío emocional constante.", critico: false },
             { id: 13, p: "Soy extremadamente autocrítico conmigo mismo.", critico: false },
             { id: 14, p: "He descuidado notablemente mi higiene personal.", critico: false },
-            { id: 15, p: "Conflictos frecuentes en el hogar.", critico: false },
-            { id: 16, p: "He recurrido al consumo de sustancias nocivas.", critico: false },
-            { id: 17, p: "Bajo rendimiento escolar repentino.", critico: false }
+            { id: 15, p: "Tengo conflictos frecuentes en el hogar.", critico: false },
+            { id: 16, p: "He recurrido al consumo de sustancias (vape/alcohol).", critico: false },
+            { id: 17, p: "He notado un bajo rendimiento escolar repentino.", critico: false }
         ]
     };
 
@@ -111,13 +113,13 @@
             renderizarPreguntas(rango);
             divResultado.style.display = 'none';
         } else {
-            areaCuestionario.innerHTML = edad ? "<p style='color:red; text-align:center;'>Edad fuera de rango GTE.</p>" : "";
+            areaCuestionario.innerHTML = edad ? "<p style='color:#991b1b; text-align:center; padding:10px; background:#fee2e2; border-radius:8px;'>Edad fuera de rango GTE.</p>" : "";
         }
     });
 
     function renderizarPreguntas(rango) {
         const preguntas = bancosPreguntas[rango];
-        areaCuestionario.innerHTML = `<h2 style="color:var(--blue); font-size:18px; margin-bottom:20px;">Instrumento de Evaluación: ${rango} años</h2>`;
+        areaCuestionario.innerHTML = `<h2 style="color:var(--blue); font-size:18px; margin-bottom:20px; border-bottom:1px solid #e2e8f0; padding-bottom:10px;">Instrumento de Evaluación: ${rango} años</h2>`;
         
         preguntas.forEach(pre => {
             const div = document.createElement('div');
@@ -138,8 +140,8 @@
         }
         const max = (rango === "12-14") ? 4 : 5;
         return `<div style="display:flex; align-items:center; gap:15px;">
-            <input type="range" class="respuesta-gte" data-id="${pre.id}" data-critico="${pre.critico}" data-inverso="${pre.inverso || false}" min="1" max="${max}" value="1" oninput="this.nextElementSibling.value = this.value">
-            <output style="font-weight:bold; color:var(--orange); width:20px;">1</output>
+            <input type="range" class="respuesta-gte" data-id="${pre.id}" data-critico="${pre.critico}" data-inverso="${pre.inverso || false}" min="1" max="${max}" value="1" oninput="this.nextElementSibling.value = this.value" style="flex:1;">
+            <output style="font-weight:bold; color:var(--orange); width:30px; text-align:right;">1</output>
         </div>`;
     }
 
@@ -147,23 +149,24 @@
         const edad = parseInt(inputEdad.value);
         const inputs = document.querySelectorAll('.respuesta-gte');
         
-        if (!edad || inputs.length === 0) { alert("Complete los datos del paciente."); return; }
+        if (!edad || inputs.length === 0) { alert("Debe ingresar la edad y cargar el protocolo."); return; }
 
         const respuestas = Array.from(inputs).map(i => {
             let val = i.tagName === 'SELECT' ? i.value : parseInt(i.value);
-            // Inversión lógica ítem 12 (Solo 12-14 años)
+            // Aplicación de Inversión Meticulosa (Ítem 12 - Rango 12-14)
             if (i.dataset.inverso === "true") { val = (5 - val); } 
             return { id: parseInt(i.dataset.id), valor: val, esCritico: i.dataset.critico === "true" };
         });
 
-        if (respuestas.some(r => r.valor === "" || r.valor === 0)) { alert("Debe completar todos los ítems."); return; }
+        if (respuestas.some(r => r.valor === "" || r.valor === 0)) { alert("Por favor, responda todos los ítems del instrumento."); return; }
 
         const fase = calcularFaseGTE(edad, respuestas);
         divResultado.style.display = 'block';
         divResultado.className = (fase === "Fase 3") ? "fase-3" : "fase-otras";
         divResultado.innerHTML = `
-            <p style="text-transform:uppercase; font-size:12px; margin-bottom:5px;">Protocolo HDC 2026</p>
-            <h2 style="margin:0; font-size:28px;">${fase}</h2>
+            <p style="text-transform:uppercase; font-size:11px; font-weight:800; letter-spacing:1px; margin-bottom:5px;">Dictamen Algorítmico GTE</p>
+            <h2 style="margin:0; font-size:32px;">${fase}</h2>
+            <p style="font-size:13px; margin-top:10px; opacity:0.8;">Protocolo validado bajo el estándar HDC 2026</p>
         `;
         divResultado.scrollIntoView({ behavior: 'smooth' });
     });
