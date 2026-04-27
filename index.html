@@ -5,57 +5,164 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Portal GTE - Estándar HDC 2026</title>
     <style>
-        body { font-family: sans-serif; background-color: #f8fafc; padding: 40px; color: #333; }
-        .container { max-width: 600px; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin: auto; }
-        h1 { color: #003366; border-bottom: 2px solid #FF6600; padding-bottom: 10px; }
-        .btn-validar { background-color: #FF6600; color: white; padding: 12px 24px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; width: 100%; transition: background 0.3s; }
-        .btn-validar:hover { background-color: #e65c00; }
-        #resultado { margin-top: 20px; font-weight: bold; padding: 15px; border-radius: 5px; display: none; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f4f8; padding: 20px; color: #1a365d; }
+        .container { max-width: 700px; background: white; padding: 40px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); margin: auto; }
+        h1 { color: #003366; border-bottom: 3px solid #FF6600; padding-bottom: 10px; margin-top: 0; font-size: 24px; }
+        .header-info { margin-bottom: 30px; font-size: 14px; color: #64748b; text-transform: uppercase; letter-spacing: 1px; }
+        .input-group { margin-bottom: 25px; background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0; }
+        label { font-weight: bold; display: block; margin-bottom: 8px; }
+        input[type="number"] { width: 100%; padding: 12px; border: 2px solid #cbd5e1; border-radius: 6px; font-size: 16px; box-sizing: border-box; }
+        
+        #area-cuestionario { margin-top: 20px; }
+        .pregunta-card { background: #fff; border-left: 4px solid #FF6600; padding: 15px; margin-bottom: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); border-radius: 0 8px 8px 0; }
+        .pregunta-texto { margin: 0 0 10px 0; font-size: 15px; line-height: 1.4; }
+        select, input[type="range"] { width: 100%; padding: 8px; border-radius: 5px; border: 1px solid #cbd5e1; }
+
+        .btn-validar { background-color: #003366; color: white; padding: 16px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; font-size: 16px; transition: all 0.3s; margin-top: 20px; }
+        .btn-validar:hover { background-color: #FF6600; transform: translateY(-2px); }
+        
+        #resultado { margin-top: 25px; padding: 20px; border-radius: 10px; display: none; text-align: center; border: 2px solid transparent; }
+        .fase-alerta { background-color: #fef2f2; border-color: #fee2e2; color: #991b1b; }
+        .fase-normal { background-color: #f0fdf4; border-color: #dcfce7; color: #166534; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <h1>Guacara Te Escucha</h1>
-    <p><strong>Estándar HDC 2026</strong> | Validación de Indicadores</p>
+    <div class="header-info">SIA-GTE | Estándar de Validación HDC 2026</div>
     
-    <div style="margin-bottom: 20px;">
-        <label>Edad del Paciente:</label><br>
-        <input type="number" id="edad-paciente" placeholder="Ej. 15" style="width: 100%; padding: 10px; margin-top: 5px;">
+    <div class="input-group">
+        <label for="edad-paciente">Edad Cronológica del Paciente:</label>
+        <input type="number" id="edad-paciente" min="9" max="17" placeholder="Ingrese edad (9-17)">
     </div>
 
+    <div id="area-cuestionario">
+        </div>
+
     <button class="btn-validar" id="boton-validar">
-        VALIDAR DIAGNÓSTICO HDC 2026
+        EJECUTAR VALIDACIÓN CLÍNICA HDC 2026
     </button>
 
     <div id="resultado"></div>
 </div>
 
 <script type="module">
-    // IMPORTANTE: Aquí conectamos con el motor que ya creaste en /lib
     import { calcularFaseGTE } from './lib/motor-clinico-gte.js';
 
+    const bancosPreguntas = {
+        "9-11": [
+            { id: 1, p: "¿Te sientes triste la mayor parte del tiempo?", critico: false },
+            { id: 2, p: "¿Sientes que nadie te quiere?", critico: true },
+            { id: 3, p: "¿Has pensado en hacerte daño o que la vida no vale la pena?", critico: true },
+            { id: 4, p: "¿Te cuesta mucho hacer amigos o hablar con otros niños?", critico: true },
+            { id: 5, p: "¿Te preocupa mucho lo que otros piensen de ti?", critico: false },
+            { id: 6, p: "¿Te sientes solo incluso cuando hay gente cerca?", critico: true },
+            { id: 7, p: "¿Sientes que tus padres no te comprenden?", critico: false },
+            { id: 8, p: "¿Te dan ganas de llorar sin una razón clara?", critico: true },
+            { id: 9, p: "¿Te sientes nervioso en la escuela?", critico: false },
+            { id: 10, p: "¿Sientes que no eres bueno para nada?", critico: true },
+            { id: 11, p: "¿Te asusta el futuro o lo que pueda pasar mañana?", critico: true },
+            { id: 12, p: "¿Prefieres estar solo que jugar con otros?", critico: false },
+            { id: 13, p: "¿Sientes que algo malo va a pasar pronto?", critico: true }
+        ],
+        "12-14": [
+            { id: 1, p: "Siento que mis problemas no tienen solución.", critico: true },
+            { id: 2, p: "Me siento desesperanzado respecto al futuro.", critico: true },
+            { id: 12, p: "En mi casa puedo hablar abiertamente de mis sentimientos.", critico: false }
+        ],
+        "15-17": [
+            { id: 1, p: "He perdido el interés en actividades que antes disfrutaba mucho.", critico: true },
+            { id: 2, p: "Tengo dificultades persistentes para conciliar el sueño.", critico: true }
+        ]
+    };
+
+    const inputEdad = document.getElementById('edad-paciente');
+    const areaCuestionario = document.getElementById('area-cuestionario');
+    const divResultado = document.getElementById('resultado');
+
+    inputEdad.addEventListener('input', () => {
+        const edad = parseInt(inputEdad.value);
+        let rango = "";
+
+        if (edad >= 9 && edad <= 11) rango = "9-11";
+        else if (edad >= 12 && edad <= 14) rango = "12-14";
+        else if (edad >= 15 && edad <= 17) rango = "15-17";
+
+        if (rango) {
+            renderizarPreguntas(rango);
+            divResultado.style.display = 'none';
+        } else {
+            areaCuestionario.innerHTML = edad ? "<p style='color:#b91c1c; background:#fee2e2; padding:10px; border-radius:5px;'>La edad ingresada está fuera del rango de atención del programa GTE.</p>" : "";
+        }
+    });
+
+    function renderizarPreguntas(rango) {
+        const preguntas = bancosPreguntas[rango];
+        let html = `<h3 style="color:#003366; margin-bottom:20px;">Instrumento de Evaluación (${rango} años)</h3>`;
+        
+        preguntas.forEach(pregunta => {
+            html += `
+                <div class="pregunta-card">
+                    <p class="pregunta-texto"><strong>${pregunta.id}.</strong> ${pregunta.p}</p>
+                    ${generarInputs(rango, pregunta)}
+                </div>`;
+        });
+        areaCuestionario.innerHTML = html;
+    }
+
+    function generarInputs(rango, pregunta) {
+        if (rango === "9-11") {
+            return `
+                <select class="respuesta-gte" data-id="${pregunta.id}" data-critico="${pregunta.critico}">
+                    <option value="">-- Seleccionar respuesta --</option>
+                    <option value="Si">Sí, casi siempre</option>
+                    <option value="AV">A veces</option>
+                    <option value="No">No, casi nunca</option>
+                </select>`;
+        } else {
+            const max = (rango === "12-14") ? 4 : 5;
+            return `
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <span style="font-size:12px; color:#64748b;">Mínimo (1)</span>
+                    <input type="range" class="respuesta-gte" data-id="${pregunta.id}" data-critico="${pregunta.critico}" min="1" max="${max}" value="1" oninput="this.nextElementSibling.value = this.value">
+                    <output style="font-weight:bold; color:#FF6600;">1</output>
+                </div>`;
+        }
+    }
+
     document.getElementById('boton-validar').addEventListener('click', () => {
-        const edad = parseInt(document.getElementById('edad-paciente').value);
-        const divResultado = document.getElementById('resultado');
-
-        // Simulamos respuestas para probar que el motor funciona
-        // En el siguiente paso conectaremos los inputs reales
-        const respuestasSimuladas = []; 
-
-        if (!edad) {
-            alert("Por favor, ingrese la edad del paciente.");
+        const edad = parseInt(inputEdad.value);
+        const inputs = document.querySelectorAll('.respuesta-gte');
+        
+        if (!edad || inputs.length === 0) {
+            alert("Por favor, ingrese la edad y complete el cuestionario.");
             return;
         }
 
-        // Llamamos al motor clínico
-        const fase = calcularFaseGTE(edad, respuestasSimuladas);
+        const respuestas = Array.from(inputs).map(i => ({
+            id: parseInt(i.dataset.id),
+            valor: i.tagName === 'SELECT' ? i.value : parseInt(i.value),
+            esCritico: i.dataset.critico === "true"
+        }));
 
-        // Mostramos el resultado con armonía visual
+        // Verificación de campos vacíos para 9-11
+        if (respuestas.some(r => r.valor === "")) {
+            alert("Debe responder todas las preguntas antes de validar.");
+            return;
+        }
+
+        const fase = calcularFaseGTE(edad, respuestas);
+        
         divResultado.style.display = 'block';
-        divResultado.style.backgroundColor = '#e0f2fe';
-        divResultado.style.color = '#003366';
-        divResultado.innerText = "SISTEMA HDC 2026: El paciente ha sido clasificado en " + fase;
+        divResultado.className = (fase === "Fase 3") ? "fase-alerta" : "fase-normal";
+        divResultado.innerHTML = `
+            <div style="font-size:14px; text-transform:uppercase; margin-bottom:5px;">Resultado de Validación Clínica</div>
+            <div style="font-size:22px; font-weight:bold;">${fase}</div>
+            <div style="margin-top:10px; font-size:13px; opacity:0.8;">Protocolo HDC 2026 - Guacara Te Escucha</div>
+        `;
+        
+        divResultado.scrollIntoView({ behavior: 'smooth' });
     });
 </script>
 
