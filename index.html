@@ -1,95 +1,166 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Portal GTE - HDC 2026</title>
-<style>
-:root { --blue: #003366; --orange: #FF6600; --bg: #f1f5f9; }
-body { font-family: sans-serif; background: var(--bg); padding: 20px; display: flex; justify-content: center; }
-.container { max-width: 800px; width: 100%; background: white; padding: 40px; border-radius: 20px; box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
-h1 { color: var(--blue); border-left: 5px solid var(--orange); padding-left: 15px; margin:0; }
-.header-tag { font-size: 11px; font-weight: bold; color: #64748b; text-transform: uppercase; margin-bottom: 20px; display: block; }
-.input-group { background: #f8fafc; padding: 15px; border-radius: 10px; margin-bottom: 20px; border: 1px solid #e2e8f0; }
-.pregunta-card { background: #fff; border: 1px solid #e2e8f0; padding: 15px; margin-bottom: 10px; border-radius: 8px; }
-.btn-validar { background: var(--blue); color: white; padding: 15px; border: none; border-radius: 8px; cursor: pointer; width: 100%; font-weight: bold; font-size: 16px; }
-.btn-validar:hover { background: var(--orange); }
-#resultado { margin-top: 20px; padding: 20px; border-radius: 10px; display: none; text-align: center; }
-.fase-3 { background: #fee2e2; color: #991b1b; border: 2px solid #f87171; }
-.fase-otras { background: #dcfce7; color: #166534; border: 2px solid #4ade80; }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal GTE - Inteligencia Clínica HDC 2026</title>
+    <style>
+        :root { --blue: #003366; --orange: #FF6600; --slate: #64748b; --bg: #f1f5f9; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background-color: var(--bg); padding: 20px; color: #1e293b; display: flex; justify-content: center; }
+        .container { max-width: 800px; width: 100%; background: white; padding: 40px; border-radius: 20px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); }
+        h1 { color: var(--blue); border-left: 5px solid var(--orange); padding-left: 15px; margin: 0 0 10px 0; font-size: 26px; }
+        .header-tag { font-size: 11px; font-weight: bold; color: var(--slate); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 30px; display: block; }
+        .input-group { background: #f8fafc; padding: 20px; border-radius: 12px; border: 1px solid #e2e8f0; margin-bottom: 30px; }
+        label { font-weight: 700; color: var(--blue); margin-bottom: 10px; display: block; }
+        input[type="number"] { width: 100%; padding: 12px; border: 2px solid #cbd5e1; border-radius: 8px; font-size: 18px; outline: none; box-sizing: border-box; }
+        .pregunta-card { background: #fff; border: 1px solid #e2e8f0; padding: 20px; margin-bottom: 15px; border-radius: 10px; }
+        .pregunta-texto { font-weight: 500; margin-bottom: 15px; line-height: 1.5; font-size: 15px; }
+        select, input[type="range"] { width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; background: white; }
+        .btn-validar { background: var(--blue); color: white; padding: 18px; border: none; border-radius: 10px; cursor: pointer; font-weight: 800; width: 100%; font-size: 16px; margin-top: 25px; transition: all 0.3s; }
+        .btn-validar:hover { background: var(--orange); }
+        #resultado { margin-top: 30px; padding: 25px; border-radius: 15px; display: none; text-align: center; border: 2px solid transparent; }
+        .fase-3 { background: #fef2f2; border-color: #f87171; color: #991b1b; }
+        .fase-otras { background: #f0fdf4; border-color: #4ade80; color: #166534; }
+    </style>
 </head>
 <body>
+
 <div class="container">
-<span class="header-tag">SIA-GTE | Estándar HDC 2026</span>
-<h1>Guacara Te Escucha</h1>
-<div class="input-group">
-<label><strong>Edad del Paciente (9-17):</strong></label><br>
-<input type="number" id="edad-paciente" min="9" max="17" style="width:100%; padding:10px; margin-top:10px;">
-</div>
-<div id="area-cuestionario"></div>
-<button class="btn-validar" id="boton-validar">EJECUTAR VALIDACIÓN PROFESIONAL</button>
-<div id="resultado"></div>
+    <span class="header-tag">Sistema de Inteligencia Autogestionada</span>
+    <h1>Guacara Te Escucha</h1>
+    <p style="color: var(--slate); margin-bottom: 25px; font-size: 14px;">Protocolo Clínico Estandarizado HDC 2026</p>
+    
+    <div class="input-group">
+        <label for="edad-paciente">Edad del Paciente (9 a 17 años):</label>
+        <input type="number" id="edad-paciente" min="9" max="17" placeholder="Ingrese edad">
+    </div>
+
+    <div id="area-cuestionario"></div>
+
+    <button class="btn-validar" id="boton-validar">VALIDAR DIAGNÓSTICO PROFESIONAL</button>
+
+    <div id="resultado"></div>
 </div>
 
 <script type="module">
-import { calcularFaseGTE } from './lib/motor-clinico-gte.js';
+    import { calcularFaseGTE } from './lib/motor-clinico-gte.js';
 
-const bancos = {
-"9-11": [
-{id:1,p:"¿Te sientes triste?",c:false},{id:2,p:"¿Nadie te quiere?",c:true},{id:3,p:"¿Hacerte daño?",c:true},{id:4,p:"¿Sin amigos?",c:true},{id:5,p:"¿Miedo al qué dirán?",c:false},{id:6,p:"¿Te sientes solo?",c:true},{id:7,p:"¿Padres no comprenden?",c:false},{id:8,p:"¿Ganas de llorar?",c:true},{id:9,p:"¿Nervioso en escuela?",c:false},{id:10,p:"¿No eres bueno?",c:true},{id:11,p:"¿Miedo al futuro?",c:true},{id:12,p:"¿Prefieres soledad?",c:false},{id:13,p:"¿Algo malo pasará?",c:true}
-],
-"12-14": [
-{id:1,p:"Problemas sin solución",c:true},{id:2,p:"Desesperanza",c:true},{id:3,p:"No valgo nada",c:true},{id:4,p:"Me rindo",c:true},{id:5,p:"Amigos ignoran",c:true},{id:6,p:"No encajo",c:true},{id:7,p:"Padres critican",c:true},{id:8,p:"Solo/a",c:true},{id:9,p:"Insomnio",c:false},{id:10,p:"Apetito",c:false},{id:11,p:"Cefaleas",c:false},{id:12,p:"Comunicación hogar",c:false,inv:true},{id:13,p:"Concentración",c:false},{id:14,p:"Llantos",c:false},{id:15,p:"Rabia",c:false}
-],
-"15-17": [
-{id:1,p:"Pérdida de interés",c:true},{id:2,p:"Insomnio severo",c:true},{id:3,p:"Fatiga extrema",c:true},{id:4,p:"Culpa/Inutilidad",c:true},{id:5,p:"Indecisión",c:true},{id:6,p:"Pensamientos muerte",c:true},{id:7,p:"Lentitud",c:true},{id:8,p:"Peso",c:false},{id:9,p:"Aislamiento",c:false},{id:10,p:"Irritabilidad",c:false},{id:11,p:"Desesperanza",c:false},{id:12,p:"Vacío",c:false},{id:13,p:"Autocrítica",c:false},{id:14,p:"Higiene",c:false},{id:15,p:"Conflictos",c:false},{id:16,p:"Sustancias",c:false},{id:17,p:"Bajo rendimiento",c:false}
-]
-};
+    const bancosPreguntas = {
+        "9-11": [
+            { id: 1, p: "¿Te sientes triste la mayor parte del tiempo?", critico: false },
+            { id: 2, p: "¿Sientes que nadie te quiere?", critico: true },
+            { id: 3, p: "¿Has pensado en hacerte daño o que la vida no vale la pena?", critico: true },
+            { id: 4, p: "¿Te cuesta mucho hacer amigos?", critico: true },
+            { id: 5, p: "¿Te preocupa mucho lo que otros piensen de ti?", critico: false },
+            { id: 6, p: "¿Te sientes solo incluso cuando hay gente cerca?", critico: true },
+            { id: 7, p: "¿Sientes que tus padres no te comprenden?", critico: false },
+            { id: 8, p: "¿Te dan ganas de llorar sin una razón clara?", critico: true },
+            { id: 9, p: "¿Te sientes nervioso en la escuela?", critico: false },
+            { id: 10, p: "¿Sientes que no eres bueno para nada?", critico: true },
+            { id: 11, p: "¿Te asusta el futuro?", critico: true },
+            { id: 12, p: "¿Prefieres estar solo?", critico: false },
+            { id: 13, p: "¿Sientes que algo malo va a pasar pronto?", critico: true }
+        ],
+        "12-14": [
+            { id: 1, p: "Siento que mis problemas no tienen solución.", critico: true },
+            { id: 2, p: "Me siento desesperanzado respecto al futuro.", critico: true },
+            { id: 3, p: "Siento que no valgo nada.", critico: true },
+            { id: 4, p: "Me rindo fácilmente ante las dificultades.", critico: true },
+            { id: 5, p: "Siento que mis amigos me ignoran.", critico: true },
+            { id: 6, p: "No encajo en ningún sitio.", critico: true },
+            { id: 7, p: "Siento que mis padres me critican constantemente.", critico: true },
+            { id: 8, p: "Me siento profundamente solo/a.", critico: true },
+            { id: 9, p: "Me cuesta mucho conciliar el sueño.", critico: false },
+            { id: 10, p: "He perdido el apetito o como en exceso.", critico: false },
+            { id: 11, p: "Sufro de dolores de cabeza frecuentes.", critico: false },
+            { id: 12, p: "En mi casa puedo hablar de lo que me pasa.", critico: false, inverso: true },
+            { id: 13, p: "Me cuesta concentrarme en mis estudios.", critico: false },
+            { id: 14, p: "Lloro con mucha facilidad.", critico: false },
+            { id: 15, p: "Siento mucha rabia acumulada.", critico: false }
+        ],
+        "15-17": [
+            { id: 1, p: "He perdido el interés en hobbies que antes amaba.", critico: true },
+            { id: 2, p: "Tengo insomnio persistente.", critico: true },
+            { id: 3, p: "Siento una fatiga extrema sin causa física.", critico: true },
+            { id: 4, p: "Me invade un sentimiento de culpa.", critico: true },
+            { id: 5, p: "Tengo dificultad para tomar decisiones simples.", critico: true },
+            { id: 6, p: "He tenido pensamientos sobre la muerte.", critico: true },
+            { id: 7, p: "Siento que mis movimientos son más lentos.", critico: true },
+            { id: 8, p: "Cambios drásticos en mi peso.", critico: false },
+            { id: 9, p: "Me aíslo de mi círculo social.", critico: false },
+            { id: 10, p: "Irritabilidad constante.", critico: false },
+            { id: 11, p: "Desesperanza profunda.", critico: false },
+            { id: 12, p: "Vacío emocional constante.", critico: false },
+            { id: 13, p: "Soy extremadamente autocrítico.", critico: false },
+            { id: 14, p: "He descuidado mi higiene personal.", critico: false },
+            { id: 15, p: "Conflictos frecuentes en el hogar.", critico: false },
+            { id: 16, p: "Consumo de sustancias nocivas.", critico: false },
+            { id: 17, p: "Bajo rendimiento escolar repentino.", critico: false }
+        ]
+    };
 
-const inputEdad = document.getElementById('edad-paciente');
-const area = document.getElementById('area-cuestionario');
-const res = document.getElementById('resultado');
+    const inputEdad = document.getElementById('edad-paciente');
+    const areaCuestionario = document.getElementById('area-cuestionario');
+    const divResultado = document.getElementById('resultado');
 
-inputEdad.addEventListener('input', () => {
-const edad = parseInt(inputEdad.value);
-let r = (edad>=9&&edad<=11)?"9-11":(edad>=12&&edad<=14)?"12-14":(edad>=15&&edad<=17)?"15-17":null;
-if(r){ renderizar(r); res.style.display='none'; } else { area.innerHTML = ""; }
-});
+    inputEdad.addEventListener('input', () => {
+        const edad = parseInt(inputEdad.value);
+        let rango = (edad >= 9 && edad <= 11) ? "9-11" : (edad >= 12 && edad <= 14) ? "12-14" : (edad >= 15 && edad <= 17) ? "15-17" : null;
 
-function renderizar(r) {
-area.innerHTML = `<h3>Protocolo ${r} años</h3>`;
-bancos[r].forEach(p => {
-const d = document.createElement('div');
-d.className = 'pregunta-card';
-d.innerHTML = `<p>${p.id}. ${p.p}</p>${generarC(r, p)}`;
-area.appendChild(d);
-});
-}
+        if (rango) {
+            renderizarPreguntas(rango);
+            divResultado.style.display = 'none';
+        } else {
+            areaCuestionario.innerHTML = edad ? "<p style='color:red; text-align:center;'>Fuera de rango GTE.</p>" : "";
+        }
+    });
 
-function generarC(r, p) {
-if(r==="9-11"){
-return `<select class="resp" data-id="${p.id}" data-c="${p.c}"><option value="">-</option><option value="Si">Si</option><option value="AV">A veces</option><option value="No">No</option></select>`;
-}
-const m = (r==="12-14")?4:5;
-return `<input type="range" class="resp" data-id="${p.id}" data-c="${p.c}" data-inv="${p.inv||false}" min="1" max="${m}" value="1" oninput="this.nextElementSibling.value=this.value"><output>1</output>`;
-}
+    function renderizarPreguntas(rango) {
+        areaCuestionario.innerHTML = `<h3 style="color:var(--blue); border-bottom:1px solid #eee; padding-bottom:10px;">Protocolo: ${rango} años</h3>`;
+        bancosPreguntas[rango].forEach(pre => {
+            const div = document.createElement('div');
+            div.className = 'pregunta-card';
+            div.innerHTML = `<p class="pregunta-texto"><strong>${pre.id}.</strong> ${pre.p}</p>${generarControl(rango, pre)}`;
+            areaCuestionario.appendChild(div);
+        });
+    }
 
-document.getElementById('boton-validar').addEventListener('click', () => {
-const edad = parseInt(inputEdad.value);
-const inputs = document.querySelectorAll('.resp');
-if(!edad || inputs.length === 0) { alert("Cargue la edad primero."); return; }
-const respuestas = Array.from(inputs).map(i => {
-let v = i.tagName==='SELECT'?i.value:parseInt(i.value);
-if(i.dataset.inv==="true") v = (5-v);
-return { id: parseInt(i.dataset.id), valor: v, esCritico: i.dataset.c==="true" };
-});
-if(respuestas.some(r => r.valor === "")) { alert("Complete todo."); return; }
-const fase = calcularFaseGTE(edad, respuestas);
-res.style.display = 'block';
-res.className = (fase==="Fase 3")?"fase-3":"fase-otras";
-res.innerHTML = `<h2>${fase}</h2><p>Protocolo HDC 2026</p>`;
-});
+    function generarControl(rango, pre) {
+        if (rango === "9-11") {
+            return `<select class="respuesta-gte" data-id="${pre.id}" data-critico="${pre.critico}">
+                <option value="">-- Seleccionar --</option>
+                <option value="Si">Sí, casi siempre</option>
+                <option value="AV">A veces</option>
+                <option value="No">No, casi nunca</option>
+            </select>`;
+        }
+        const max = (rango === "12-14") ? 4 : 5;
+        return `<div style="display:flex; align-items:center; gap:10px;">
+            <input type="range" class="respuesta-gte" data-id="${pre.id}" data-critico="${pre.critico}" data-inverso="${pre.inverso || false}" min="1" max="${max}" value="1" oninput="this.nextElementSibling.value = this.value" style="flex:1;">
+            <output style="font-weight:bold; color:var(--orange); width:20px; text-align:right;">1</output>
+        </div>`;
+    }
+
+    document.getElementById('boton-validar').addEventListener('click', () => {
+        const edad = parseInt(inputEdad.value);
+        const inputs = document.querySelectorAll('.respuesta-gte');
+        
+        if (!edad || inputs.length === 0) { alert("Ingrese datos."); return; }
+
+        const respuestas = Array.from(inputs).map(i => {
+            let val = i.tagName === 'SELECT' ? i.value : parseInt(i.value);
+            if (i.dataset.inverso === "true") { val = (5 - val); } 
+            return { id: parseInt(i.dataset.id), valor: val, esCritico: i.dataset.critico === "true" };
+        });
+
+        if (respuestas.some(r => r.valor === "" || r.valor === 0)) { alert("Complete todo."); return; }
+
+        const fase = calcularFaseGTE(edad, respuestas);
+        divResultado.style.display = 'block';
+        divResultado.className = (fase === "Fase 3") ? "fase-3" : "fase-otras";
+        divResultado.innerHTML = `<h3>${fase}</h3><p>Dictamen HDC 2026</p>`;
+        divResultado.scrollIntoView({ behavior: 'smooth' });
+    });
 </script>
 </body>
 </html>
