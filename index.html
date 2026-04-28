@@ -3,36 +3,39 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>GTE - HDC 2026</title>
+<title>Portal GTE - HDC 2026</title>
 <style>
 :root { --blue: #003366; --orange: #FF6600; --bg: #f1f5f9; }
 body { font-family: sans-serif; background: var(--bg); padding: 20px; display: flex; justify-content: center; }
-.container { max-width: 800px; width: 100%; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
-h1 { color: var(--blue); border-left: 5px solid var(--orange); padding-left: 15px; }
+.container { max-width: 800px; width: 100%; background: white; padding: 40px; border-radius: 20px; box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+h1 { color: var(--blue); border-left: 5px solid var(--orange); padding-left: 15px; margin:0; }
+.header-tag { font-size: 11px; font-weight: bold; color: #64748b; text-transform: uppercase; margin-bottom: 20px; display: block; }
 .input-group { background: #f8fafc; padding: 15px; border-radius: 10px; margin-bottom: 20px; border: 1px solid #e2e8f0; }
 .pregunta-card { background: #fff; border: 1px solid #e2e8f0; padding: 15px; margin-bottom: 10px; border-radius: 8px; }
-.btn-validar { background: var(--blue); color: white; padding: 15px; border: none; border-radius: 8px; cursor: pointer; width: 100%; font-weight: bold; }
+.btn-validar { background: var(--blue); color: white; padding: 15px; border: none; border-radius: 8px; cursor: pointer; width: 100%; font-weight: bold; font-size: 16px; }
 .btn-validar:hover { background: var(--orange); }
-#resultado { margin-top: 20px; padding: 20px; border-radius: 10px; display: none; text-align: center; font-weight: bold; }
+#resultado { margin-top: 20px; padding: 20px; border-radius: 10px; display: none; text-align: center; }
 .fase-3 { background: #fee2e2; color: #991b1b; border: 2px solid #f87171; }
 .fase-otras { background: #dcfce7; color: #166534; border: 2px solid #4ade80; }
 </style>
 </head>
 <body>
 <div class="container">
+<span class="header-tag">SIA-GTE | Estándar HDC 2026</span>
 <h1>Guacara Te Escucha</h1>
-<p style="color:#64748b; font-size:12px;">ESTÁNDAR CLÍNICO HDC 2026</p>
 <div class="input-group">
-<label>Edad del Paciente:</label>
-<input type="number" id="edad-paciente" min="9" max="17" placeholder="9-17">
+<label><strong>Edad del Paciente (9-17):</strong></label><br>
+<input type="number" id="edad-paciente" min="9" max="17" style="width:100%; padding:10px; margin-top:10px;">
 </div>
 <div id="area-cuestionario"></div>
-<button class="btn-validar" id="boton-validar">VALIDAR DIAGNÓSTICO</button>
+<button class="btn-validar" id="boton-validar">EJECUTAR VALIDACIÓN PROFESIONAL</button>
 <div id="resultado"></div>
 </div>
+
 <script type="module">
 import { calcularFaseGTE } from './lib/motor-clinico-gte.js';
-const bancosPreguntas = {
+
+const bancos = {
 "9-11": [
 {id:1,p:"¿Te sientes triste?",c:false},{id:2,p:"¿Nadie te quiere?",c:true},{id:3,p:"¿Hacerte daño?",c:true},{id:4,p:"¿Sin amigos?",c:true},{id:5,p:"¿Miedo al qué dirán?",c:false},{id:6,p:"¿Te sientes solo?",c:true},{id:7,p:"¿Padres no comprenden?",c:false},{id:8,p:"¿Ganas de llorar?",c:true},{id:9,p:"¿Nervioso en escuela?",c:false},{id:10,p:"¿No eres bueno?",c:true},{id:11,p:"¿Miedo al futuro?",c:true},{id:12,p:"¿Prefieres soledad?",c:false},{id:13,p:"¿Algo malo pasará?",c:true}
 ],
@@ -43,44 +46,49 @@ const bancosPreguntas = {
 {id:1,p:"Pérdida de interés",c:true},{id:2,p:"Insomnio severo",c:true},{id:3,p:"Fatiga extrema",c:true},{id:4,p:"Culpa/Inutilidad",c:true},{id:5,p:"Indecisión",c:true},{id:6,p:"Pensamientos muerte",c:true},{id:7,p:"Lentitud",c:true},{id:8,p:"Peso",c:false},{id:9,p:"Aislamiento",c:false},{id:10,p:"Irritabilidad",c:false},{id:11,p:"Desesperanza",c:false},{id:12,p:"Vacío",c:false},{id:13,p:"Autocrítica",c:false},{id:14,p:"Higiene",c:false},{id:15,p:"Conflictos",c:false},{id:16,p:"Sustancias",c:false},{id:17,p:"Bajo rendimiento",c:false}
 ]
 };
+
 const inputEdad = document.getElementById('edad-paciente');
 const area = document.getElementById('area-cuestionario');
 const res = document.getElementById('resultado');
+
 inputEdad.addEventListener('input', () => {
 const edad = parseInt(inputEdad.value);
-let rango = (edad>=9&&edad<=11)?"9-11":(edad>=12&&edad<=14)?"12-14":(edad>=15&&edad<=17)?"15-17":null;
-if(rango){ renderizar(rango); res.style.display='none'; }
-else { area.innerHTML = ""; }
+let r = (edad>=9&&edad<=11)?"9-11":(edad>=12&&edad<=14)?"12-14":(edad>=15&&edad<=17)?"15-17":null;
+if(r){ renderizar(r); res.style.display='none'; } else { area.innerHTML = ""; }
 });
-function renderizar(rango) {
-area.innerHTML = `<h3>Protocolo ${rango} años</h3>`;
-bancosPreguntas[rango].forEach(pre => {
-const div = document.createElement('div');
-div.className = 'pregunta-card';
-div.innerHTML = `<p>${pre.id}. ${pre.p}</p>${generarCtrl(rango, pre)}`;
-area.appendChild(div);
+
+function renderizar(r) {
+area.innerHTML = `<h3>Protocolo ${r} años</h3>`;
+bancos[r].forEach(p => {
+const d = document.createElement('div');
+d.className = 'pregunta-card';
+d.innerHTML = `<p>${p.id}. ${p.p}</p>${generarC(r, p)}`;
+area.appendChild(d);
 });
 }
-function generarCtrl(rango, pre) {
-if(rango==="9-11"){
-return `<select class="resp-gte" data-id="${pre.id}" data-c="${pre.c}"><option value="">-</option><option value="Si">Si</option><option value="AV">A veces</option><option value="No">No</option></select>`;
+
+function generarC(r, p) {
+if(r==="9-11"){
+return `<select class="resp" data-id="${p.id}" data-c="${p.c}"><option value="">-</option><option value="Si">Si</option><option value="AV">A veces</option><option value="No">No</option></select>`;
 }
-const max = (rango==="12-14")?4:5;
-return `<input type="range" class="resp-gte" data-id="${pre.id}" data-c="${pre.c}" data-inv="${pre.inv||false}" min="1" max="${max}" value="1" oninput="this.nextElementSibling.value=this.value"><output>1</output>`;
+const m = (r==="12-14")?4:5;
+return `<input type="range" class="resp" data-id="${p.id}" data-c="${p.c}" data-inv="${p.inv||false}" min="1" max="${m}" value="1" oninput="this.nextElementSibling.value=this.value"><output>1</output>`;
 }
+
 document.getElementById('boton-validar').addEventListener('click', () => {
 const edad = parseInt(inputEdad.value);
-const inputs = document.querySelectorAll('.resp-gte');
-if(!edad || inputs.length === 0) return;
+const inputs = document.querySelectorAll('.resp');
+if(!edad || inputs.length === 0) { alert("Cargue la edad primero."); return; }
 const respuestas = Array.from(inputs).map(i => {
 let v = i.tagName==='SELECT'?i.value:parseInt(i.value);
 if(i.dataset.inv==="true") v = (5-v);
 return { id: parseInt(i.dataset.id), valor: v, esCritico: i.dataset.c==="true" };
 });
+if(respuestas.some(r => r.valor === "")) { alert("Complete todo."); return; }
 const fase = calcularFaseGTE(edad, respuestas);
 res.style.display = 'block';
 res.className = (fase==="Fase 3")?"fase-3":"fase-otras";
-res.innerHTML = `<h2>${fase}</h2><p>HDC 2026</p>`;
+res.innerHTML = `<h2>${fase}</h2><p>Protocolo HDC 2026</p>`;
 });
 </script>
 </body>
