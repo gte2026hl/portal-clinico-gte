@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consola GTE - Historia Clínica</title>
+    <style>
+        :root { --blue: #003366; --orange: #FF6600; --slate: #64748b; --bg: #f8fafc; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; display: flex; }
+        
+        /* Sidebar Estándar HDC */
+        .sidebar { width: 260px; background: var(--blue); color: white; min-height: 100vh; padding: 20px; position: fixed; }
+        .nav-item { padding: 12px; margin-bottom: 5px; border-radius: 8px; cursor: pointer; transition: 0.3s; display: flex; align-items: center; gap: 10px; }
+        .nav-item:hover, .nav-item.active { background: rgba(255,102,0,0.2); border-left: 4px solid var(--orange); }
+        
+        /* Contenedor Principal */
+        .main-content { margin-left: 260px; padding: 40px; width: calc(100% - 260px); }
+        .header-clínica { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 20px; margin-bottom: 30px; }
+        
+        /* Secciones de la Historia (PDF) */
+        .seccion-historia { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 25px; border-top: 5px solid var(--blue); }
+        .grid-datos { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+        .field { display: flex; flex-direction: column; gap: 5px; margin-bottom: 15px; }
+        label { font-size: 12px; font-weight: bold; color: var(--slate); text-transform: uppercase; }
+        input, select, textarea { padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px; }
+        
+        /* Botonera de Acción */
+        .floating-actions { position: fixed; bottom: 30px; right: 40px; display: flex; gap: 15px; }
+        .btn { padding: 15px 25px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 10px; box-shadow: 0 10px 15px rgba(0,0,0,0.1); }
+        .btn-save { background: var(--blue); color: white; }
+        .btn-print { background: var(--orange); color: white; }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <h2 style="font-size: 18px; margin-bottom: 30px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px;">GTE 2026</h2>
+        <div class="nav-item">📁 Expedientes</div>
+        <div class="nav-item">📅 Agenda</div>
+        <div class="nav-item active">👤 Mis Pacientes</div>
+        <div class="nav-item">🧪 Test e Instrumentos</div>
+        <div class="nav-item">🧮 Calculadora GTE</div>
+    </div>
+
+    <div class="main-content">
+        <div class="header-clínica">
+            <div>
+                <h1 style="margin:0; color: var(--blue);">Historia Psicológica</h1>
+                <span style="color: var(--slate);">Expediente: <strong>GTE-2026-001</strong> | Psicólogo: <strong>HDC 1991</strong></span>
+            </div>
+            <div style="text-align: right;">
+                <span style="background: #fee2e2; color: #991b1b; padding: 5px 15px; border-radius: 20px; font-weight: bold;">FASE 3 - PRIORITARIO</span>
+            </div>
+        </div>
+
+        <div class="seccion-historia">
+            <h3 style="margin-top:0;">I. DATOS DEL PACIENTE</h3>
+            <div class="grid-datos">
+                <div class="field"><label>Primer Nombre</label><input type="text" value="Juan"></div>
+                <div class="field"><label>Segundo Nombre</label><input type="text" value="Alberto"></div>
+                <div class="field"><label>Primer Apellido</label><input type="text" value="Pérez"></div>
+                <div class="field"><label>Segundo Apellido</label><input type="text" value="García"></div>
+                <div class="field"><label>Fecha Nacimiento</label><input type="date" value="2016-04-20"></div>
+                <div class="field"><label>Edad</label><input type="number" value="10" readonly></div>
+                <div class="field"><label>Sector</label><input type="text" value="Vigirima"></div>
+                <div class="field"><label>Teléfono</label><input type="text" placeholder="04XX-XXXXXXX"></div>
+                <div class="field"><label>C.I. / Escolar</label><input type="text" placeholder="V-XXXXXXXX"></div>
+            </div>
+        </div>
+
+        <div class="seccion-historia">
+            <h3 style="margin-top:0;">II. DATOS DE REPRESENTANTES</h3>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px;">
+                <div>
+                    <h4 style="color: var(--orange);">Madre / Rep. 1</h4>
+                    <div class="field"><label>Nombre Completo</label><input type="text"></div>
+                    <div class="field"><label>Cédula y Teléfono</label><input type="text"></div>
+                    <div class="field"><label>Dirección donde reside</label><input type="text"></div>
+                </div>
+                <div>
+                    <h4 style="color: var(--orange);">Padre / Rep. 2</h4>
+                    <div class="field"><label>Nombre Completo</label><input type="text"></div>
+                    <div class="field"><label>Cédula y Teléfono</label><input type="text"></div>
+                    <div class="field"><label>Dirección donde reside</label><input type="text"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="seccion-historia">
+            <h3>III. DESARROLLO PSICOMOTOR Y LENGUAJE</h3>
+            <div class="grid-datos">
+                <div class="field"><label>Edad al Sentarse</label><input type="text"></div>
+                <div class="field"><label>Edad al Pararse</label><input type="text"></div>
+                <div class="field"><label>Edad al Caminar</label><input type="text"></div>
+                <div class="field"><label>Primeras Palabras</label><input type="text"></div>
+                <div class="field"><label>Lenguaje Actual</label><select>
+                    <option>Fluido</option><option>Dificultad articulación</option><option>Escaso</option>
+                </select></div>
+            </div>
+        </div>
+
+        <div class="seccion-historia">
+            <h3>IV. EXAMEN MENTAL Y MOTIVO DE CONSULTA</h3>
+            <textarea style="width: 100%; height: 150px;" placeholder="Describa el motivo, entrevista clínica y observaciones del especialista..."></textarea>
+        </div>
+
+        <div style="height: 100px;"></div> </div>
+
+    <div class="floating-actions">
+        <button class="btn btn-save">💾 GUARDAR CAMBIOS</button>
+        <button class="btn btn-print">🖨️ IMPRIMIR PDF (HDC 2026)</button>
+    </div>
+
+</body>
+</html>
