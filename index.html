@@ -157,7 +157,7 @@
         const fase = calcularFaseGTE(edad, respuestas);
         divResultado.style.display = 'block';
         divResultado.className = (fase === "Fase 3") ? "fase-3" : "fase-otras";
-        divResultado.innerHTML = `<h3>${fase}</h3><p>Dictamen HDC 2026</p>`;
+        divResultado.innerHTML = `<h3>${fase}</h3><p>Dictamen GTE</p>`;
         divResultado.scrollIntoView({ behavior: 'smooth' });
     });
 </script>
