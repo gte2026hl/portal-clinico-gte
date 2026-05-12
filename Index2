@@ -3,113 +3,524 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Consola GTE - Historia Clínica</title>
+    <title>GTE 2026 - Gestión Clínica Municipal</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    
     <style>
-        :root { --blue: #003366; --orange: #FF6600; --slate: #64748b; --bg: #f8fafc; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; display: flex; }
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=Open+Sans:wght@400;600;700&display=swap');
         
-        /* Sidebar Estándar HDC */
-        .sidebar { width: 260px; background: var(--blue); color: white; min-height: 100vh; padding: 20px; position: fixed; }
-        .nav-item { padding: 12px; margin-bottom: 5px; border-radius: 8px; cursor: pointer; transition: 0.3s; display: flex; align-items: center; gap: 10px; }
-        .nav-item:hover, .nav-item.active { background: rgba(255,102,0,0.2); border-left: 4px solid var(--orange); }
+        :root { 
+            --gte-blue: #003366; 
+            --gte-orange: #FF6600; 
+            --gte-gold: #FFD700;
+            --gte-bg: #f8fafc; 
+        }
+
+        body { font-family: 'Open Sans', sans-serif; background-color: var(--gte-bg); margin: 0; overflow-x: hidden; }
+        h1, h2, h3 { font-family: 'Poppins', sans-serif; }
         
-        /* Contenedor Principal */
-        .main-content { margin-left: 260px; padding: 40px; width: calc(100% - 260px); }
-        .header-clínica { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 20px; margin-bottom: 30px; }
+        /* Identidad HDC2026 */
+        .gradient-border { 
+            border-top: 8px solid;
+            border-image: linear-gradient(to right, var(--gte-gold), var(--gte-orange)) 1; 
+        }
+
+        .gradient-text-footer { 
+            background: linear-gradient(to right, #b8860b, var(--gte-orange));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 800;
+        }
+
+        /* Barra de Carga Superior */
+        #loading-bar-container { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 4px; 
+            background: rgba(226, 232, 240, 0.3); z-index: 10005; display: none; 
+        }
+        #loading-bar { 
+            height: 100%; width: 0; 
+            background: linear-gradient(to right, var(--gte-gold), var(--gte-orange)); 
+            transition: width 0.4s ease; 
+        }
+
+        .btn-gte-orange { background: var(--gte-orange); color: white; font-weight: 800; border-radius: 12px; transition: 0.3s; cursor: pointer; border: none; }
+        .btn-gte-orange:hover { background: var(--gte-blue); transform: translateY(-2px); }
         
-        /* Secciones de la Historia (PDF) */
-        .seccion-historia { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 25px; border-top: 5px solid var(--blue); }
-        .grid-datos { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
-        .field { display: flex; flex-direction: column; gap: 5px; margin-bottom: 15px; }
-        label { font-size: 12px; font-weight: bold; color: var(--slate); text-transform: uppercase; }
-        input, select, textarea { padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px; }
+        .nav-button { width: 100%; text-align: left; padding: 14px 20px; display: flex; align-items: center; gap: 10px; font-size: 11px; font-weight: 700; color: #94a3b8; transition: 0.3s; border-radius: 12px; background: transparent; border: none; cursor: pointer; }
+        .nav-button.active { background: rgba(255,102,0,0.1); color: var(--gte-orange); }
         
-        /* Botonera de Acción */
-        .floating-actions { position: fixed; bottom: 30px; right: 40px; display: flex; gap: 15px; }
-        .btn { padding: 15px 25px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 10px; box-shadow: 0 10px 15px rgba(0,0,0,0.1); }
-        .btn-save { background: var(--blue); color: white; }
-        .btn-print { background: var(--orange); color: white; }
+        .form-input { width: 100%; border: 2px solid #e2e8f0; border-radius: 12px; padding: 12px; outline: none; transition: 0.3s; font-size: 13px; }
+        .form-input:focus { border-color: var(--gte-orange); }
+        
+        .clinical-modal { position: fixed; inset: 0; background: rgba(0,51,102,0.9); backdrop-filter: blur(8px); display: none; align-items: center; justify-content: center; z-index: 10010; }
+
+        #gte-toast { position: fixed; bottom: 20px; right: 20px; background: var(--gte-blue); color: white; padding: 15px 25px; border-radius: 10px; border-left: 5px solid var(--gte-orange); display: none; z-index: 10015; font-weight: 800; font-size: 12px; box-shadow: 0 10px 15px rgba(0,0,0,0.1); }
+        
+        @media print { .no-print { display: none !important; } }
     </style>
 </head>
-<body>
+<body class="min-h-screen flex flex-col md:flex-row">
 
-    <div class="sidebar">
-        <h2 style="font-size: 18px; margin-bottom: 30px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px;">GTE 2026</h2>
-        <div class="nav-item">📁 Expedientes</div>
-        <div class="nav-item">📅 Agenda</div>
-        <div class="nav-item active">👤 Mis Pacientes</div>
-        <div class="nav-item">🧪 Test e Instrumentos</div>
-        <div class="nav-item">🧮 Calculadora GTE</div>
+    <div id="loading-bar-container"><div id="loading-bar"></div></div>
+
+    <div id="login-screen" class="fixed inset-0 z-[100] bg-[#003366] flex items-center justify-center p-6">
+        <div class="bg-white w-full max-w-md rounded-[40px] shadow-2xl p-10 text-center gradient-border">
+            <h1 class="text-3xl font-black text-gte-blue uppercase tracking-tighter">Guacara Te Escucha</h1>
+            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-10">Portal Clínico de Gestión Municipal</p>
+            
+            <div class="space-y-4">
+                <input type="email" id="login-email" class="form-input" placeholder="Correo Institucional">
+                <div class="relative">
+                    <input type="password" id="login-pass" class="form-input" placeholder="••••••••">
+                    <button type="button" onclick="togglePassword()" class="absolute right-4 top-3 text-slate-300 hover:text-gte-orange transition">
+                        <span id="eye-icon">👁️</span>
+                    </button>
+                </div>
+                <button onclick="ejecutarLogin()" class="w-full btn-gte-orange py-4 text-xs uppercase tracking-widest shadow-lg mt-4">Ingresar al Sistema</button>
+            </div>
+
+            <div class="mt-10">
+                <p class="text-[9px] font-bold uppercase tracking-widest leading-relaxed">
+                    <span class="text-slate-300">Alcaldía de Guacara / Dirección Ejecutiva</span><br>
+                    <span class="gradient-text-footer">HDC2026 — Guacara Te Escucha</span>
+                </p>
+            </div>
+        </div>
     </div>
 
-    <div class="main-content">
-        <div class="header-clínica">
-            <div>
-                <h1 style="margin:0; color: var(--blue);">Historia Psicológica</h1>
-                <span style="color: var(--slate);">Expediente: <strong>GTE-2026-001</strong> | Psicólogo: <strong>HDC 1991</strong></span>
-            </div>
-            <div style="text-align: right;">
-                <span style="background: #fee2e2; color: #991b1b; padding: 5px 15px; border-radius: 20px; font-weight: bold;">FASE 3 - PRIORITARIO</span>
-            </div>
+    <nav id="sidebar" class="hidden no-print w-full md:w-64 bg-white border-r h-screen sticky top-0 flex flex-col p-6 shadow-sm">
+        <div class="mb-10">
+            <h2 class="text-lg font-black text-gte-blue leading-tight uppercase">GTE<span class="text-gte-orange">2026</span></h2>
+            <p id="display-user-rol" class="text-[8px] font-black text-slate-300 uppercase tracking-widest mt-1">ROL</p>
         </div>
-
-        <div class="seccion-historia">
-            <h3 style="margin-top:0;">I. DATOS DEL PACIENTE</h3>
-            <div class="grid-datos">
-                <div class="field"><label>Primer Nombre</label><input type="text" value="Juan"></div>
-                <div class="field"><label>Segundo Nombre</label><input type="text" value="Alberto"></div>
-                <div class="field"><label>Primer Apellido</label><input type="text" value="Pérez"></div>
-                <div class="field"><label>Segundo Apellido</label><input type="text" value="García"></div>
-                <div class="field"><label>Fecha Nacimiento</label><input type="date" value="2016-04-20"></div>
-                <div class="field"><label>Edad</label><input type="number" value="10" readonly></div>
-                <div class="field"><label>Sector</label><input type="text" value="Vigirima"></div>
-                <div class="field"><label>Teléfono</label><input type="text" placeholder="04XX-XXXXXXX"></div>
-                <div class="field"><label>C.I. / Escolar</label><input type="text" placeholder="V-XXXXXXXX"></div>
-            </div>
+        <div id="nav-menu" class="flex-grow space-y-2"></div>
+        <div class="pt-6 border-t">
+            <div class="text-[10px] font-black text-gte-blue mb-2 uppercase truncate" id="display-user-name">Usuario</div>
+            <button onclick="cerrarSesion()" class="w-full py-3 bg-red-50 rounded-xl text-[10px] font-black text-red-500 uppercase hover:bg-red-100 transition border-none cursor-pointer">Cerrar Sesión</button>
         </div>
+    </nav>
 
-        <div class="seccion-historia">
-            <h3 style="margin-top:0;">II. DATOS DE REPRESENTANTES</h3>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px;">
-                <div>
-                    <h4 style="color: var(--orange);">Madre / Rep. 1</h4>
-                    <div class="field"><label>Nombre Completo</label><input type="text"></div>
-                    <div class="field"><label>Cédula y Teléfono</label><input type="text"></div>
-                    <div class="field"><label>Dirección donde reside</label><input type="text"></div>
-                </div>
-                <div>
-                    <h4 style="color: var(--orange);">Padre / Rep. 2</h4>
-                    <div class="field"><label>Nombre Completo</label><input type="text"></div>
-                    <div class="field"><label>Cédula y Teléfono</label><input type="text"></div>
-                    <div class="field"><label>Dirección donde reside</label><input type="text"></div>
+    <main id="main-content" class="hidden flex-grow p-8 overflow-y-auto">
+        
+        <section id="tab-master-stats" class="tab-content hidden">
+            <div class="flex justify-between items-center mb-8 no-print">
+                <h2 class="text-3xl font-black text-gte-blue uppercase tracking-tighter">Impacto de Gestión</h2>
+                <button onclick="generarPDF()" class="bg-gte-blue text-white px-6 py-2 rounded-xl text-[10px] font-black uppercase shadow-lg cursor-pointer">📄 Descargar Reporte</button>
+            </div>
+            <div id="reporte-area">
+                <div id="kpi-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10"></div>
+                <div class="bg-white p-8 rounded-[35px] border border-slate-100 shadow-sm mb-8">
+                    <h4 class="text-[10px] font-black text-slate-400 uppercase mb-6 tracking-widest text-center">Focos por Institución Educativa</h4>
+                    <div style="height: 350px;"><canvas id="chartInstituciones"></canvas></div>
                 </div>
             </div>
-        </div>
+        </section>
 
-        <div class="seccion-historia">
-            <h3>III. DESARROLLO PSICOMOTOR Y LENGUAJE</h3>
-            <div class="grid-datos">
-                <div class="field"><label>Edad al Sentarse</label><input type="text"></div>
-                <div class="field"><label>Edad al Pararse</label><input type="text"></div>
-                <div class="field"><label>Edad al Caminar</label><input type="text"></div>
-                <div class="field"><label>Primeras Palabras</label><input type="text"></div>
-                <div class="field"><label>Lenguaje Actual</label><select>
-                    <option>Fluido</option><option>Dificultad articulación</option><option>Escaso</option>
-                </select></div>
+        <section id="tab-repositorio" class="tab-content hidden">
+            <div class="flex justify-between items-end mb-6">
+                <h2 class="text-3xl font-black text-gte-blue uppercase tracking-tighter">Repositorio Maestro</h2>
+                <div id="master-only-upload" class="hidden">
+                    <input type="file" id="excel-file" class="hidden" onchange="procesarCargaMaestra(event)">
+                    <button onclick="document.getElementById('excel-file').click()" class="bg-white border-2 border-gte-blue text-gte-blue px-6 py-2 rounded-xl text-[10px] font-black uppercase cursor-pointer">Sincronizar Excel</button>
+                </div>
             </div>
+            <input type="text" id="buscador-input" oninput="filtrarTabla()" class="form-input mb-6 border-2 border-orange-50 font-bold" placeholder="🔍 BUSCAR POR NOMBRE, CI, EXPEDIENTE O ESCUELA...">
+            <div class="bg-white rounded-[25px] shadow-sm border border-slate-100 overflow-hidden">
+                <table class="w-full text-left">
+                    <thead class="bg-slate-50">
+                        <tr class="text-[10px] font-black text-slate-400 uppercase">
+                            <th class="p-5">ID GTE</th>
+                            <th class="p-5">Paciente y Datos</th>
+                            <th class="p-5">Institución</th>
+                            <th class="p-5 text-center">Fase</th>
+                            <th class="p-5">Estatus</th>
+                            <th class="p-5 text-right">Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody id="lista-expedientes" class="text-sm"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <section id="tab-mis-pacientes" class="tab-content hidden">
+            <div class="mb-8">
+                <h2 class="text-3xl font-black text-gte-blue uppercase tracking-tighter">Mis Pacientes Adoptados</h2>
+                <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Gestión Clínica Individual</p>
+            </div>
+            <div class="bg-white rounded-[25px] shadow-sm border border-slate-100 overflow-hidden">
+                <table class="w-full text-left">
+                    <thead class="bg-slate-50">
+                        <tr class="text-[10px] font-black text-slate-400 uppercase">
+                            <th class="p-5">ID GTE</th>
+                            <th class="p-5">Paciente</th>
+                            <th class="p-5">Estatus Actual</th>
+                            <th class="p-5 text-right">Acción Clínica</th>
+                        </tr>
+                    </thead>
+                    <tbody id="lista-mis-pacientes" class="text-sm"></tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <div id="modal-demograficos" class="clinical-modal">
+        <div class="bg-white p-8 rounded-[40px] max-w-4xl w-full h-[85vh] overflow-y-auto shadow-2xl gradient-border">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-black text-gte-blue uppercase">Portal 1: Caracterización Social</h2>
+                <button onclick="cerrarModales()" class="text-slate-300 hover:text-red-500 font-bold">X</button>
+            </div>
+            <form id="form-caracterizacion" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="md:col-span-1"><label class="text-[9px] font-black uppercase ml-2">Nombres</label>
+                    <input type="text" id="cs-nombres" class="form-input" placeholder="Nombres del paciente"></div>
+                <div class="md:col-span-1"><label class="text-[9px] font-black uppercase ml-2">Apellidos</label>
+                    <input type="text" id="cs-apellidos" class="form-input" placeholder="Apellidos del paciente"></div>
+                <div class="md:col-span-1"><label class="text-[9px] font-black uppercase ml-2">Sexo</label>
+                    <select id="cs-sexo" class="form-input"><option value="M">Masculino</option><option value="F">Femenino</option></select></div>
+                
+                <div class="md:col-span-1"><label class="text-[9px] font-black uppercase ml-2">Fecha Nacimiento</label>
+                    <input type="date" id="cs-fecha-nac" class="form-input"></div>
+                <div class="md:col-span-1"><label class="text-[9px] font-black uppercase ml-2">Teléfono / Informante</label>
+                    <input type="text" id="cs-tlf" class="form-input" placeholder="04XX-XXXXXXX"></div>
+                <div class="md:col-span-1"><label class="text-[9px] font-black uppercase ml-2">Sector</label>
+                    <input type="text" id="cs-sector" class="form-input" placeholder="Comunidad"></div>
+                
+                <input type="text" id="cs-calle" class="form-input" placeholder="Calle / Avenida">
+                <input type="text" id="cs-casa" class="form-input" placeholder="Casa N°">
+                <input type="text" id="cs-informante" class="form-input" placeholder="Nombre del Informante">
+                
+                <div class="md:col-span-3 border-t pt-4"><h4 class="text-[10px] font-black text-gte-blue uppercase">Datos de la Madre</h4></div>
+                <input type="text" id="cs-m-nombre" class="form-input" placeholder="Nombre Completo">
+                <input type="text" id="cs-m-ci" class="form-input" placeholder="Cédula">
+                <input type="number" id="cs-m-edad" class="form-input" placeholder="Edad">
+                <input type="text" id="cs-m-escolaridad" class="form-input" placeholder="Nivel Educativo">
+                <input type="text" id="cs-m-ocupacion" class="form-input" placeholder="Ocupación">
+                <div class="flex items-center ml-2"><input type="checkbox" id="cs-m-vive" checked class="mr-2"> <span class="text-[10px] font-bold uppercase">Vive con el niño</span></div>
+
+                <div class="md:col-span-3 border-t pt-4"><h4 class="text-[10px] font-black text-gte-blue uppercase">Datos del Padre</h4></div>
+                <input type="text" id="cs-p-nombre" class="form-input" placeholder="Nombre Completo">
+                <input type="text" id="cs-p-ci" class="form-input" placeholder="Cédula">
+                <input type="number" id="cs-p-edad" class="form-input" placeholder="Edad">
+                <input type="text" id="cs-p-escolaridad" class="form-input" placeholder="Nivel Educativo">
+                <input type="text" id="cs-p-ocupacion" class="form-input" placeholder="Ocupación">
+                <div class="flex items-center ml-2"><input type="checkbox" id="cs-p-vive" class="mr-2"> <span class="text-[10px] font-bold uppercase">Vive con el niño</span></div>
+
+                <button type="button" onclick="guardarCaracterizacion()" class="md:col-span-3 btn-gte-orange py-4 uppercase text-xs shadow-xl">Guardar y Continuar a Historia Clínica</button>
+            </form>
         </div>
-
-        <div class="seccion-historia">
-            <h3>IV. EXAMEN MENTAL Y MOTIVO DE CONSULTA</h3>
-            <textarea style="width: 100%; height: 150px;" placeholder="Describa el motivo, entrevista clínica y observaciones del especialista..."></textarea>
-        </div>
-
-        <div style="height: 100px;"></div> </div>
-
-    <div class="floating-actions">
-        <button class="btn btn-save">💾 GUARDAR CAMBIOS</button>
-        <button class="btn btn-print">🖨️ IMPRIMIR PDF (HDC 2026)</button>
     </div>
 
+    <div id="modal-historia" class="clinical-modal">
+        <div class="bg-white p-8 rounded-[40px] max-w-5xl w-full h-[90vh] overflow-y-auto shadow-2xl gradient-border">
+            <h2 class="text-2xl font-black text-gte-blue uppercase mb-2">Portal 2: Historia Clínica</h2>
+            <form id="form-historia" class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                <textarea id="hc-motivo" class="md:col-span-2 form-input h-24" placeholder="Motivo de Consulta..."></textarea>
+                <textarea id="hc-psicomotor" class="form-input h-20" placeholder="Desarrollo Psicomotor"></textarea>
+                <textarea id="hc-lenguaje" class="form-input h-20" placeholder="Lenguaje"></textarea>
+                <textarea id="hc-habitos" class="form-input h-20" placeholder="Hábitos"></textarea>
+                <textarea id="hc-escolaridad" class="form-input h-20" placeholder="Escolaridad"></textarea>
+                <textarea id="hc-examen-mental" class="form-input h-20" placeholder="Examen Mental"></textarea>
+                <textarea id="hc-apariencia" class="form-input h-20" placeholder="Apariencia Física"></textarea>
+                <textarea id="hc-notas" class="md:col-span-2 form-input h-32" placeholder="Notas adicionales de la entrevista..."></textarea>
+                <button type="button" onclick="guardarHistoriaClinica()" class="md:col-span-2 btn-gte-orange py-4 uppercase text-xs">Finalizar Historia Clínica</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="gte-toast"></div>
+
+    <script>
+        const SUPABASE_URL = "https://mltfjgkbparwwofgknjg.supabase.co";
+        const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1sdGZqZ2ticGFyd3dvZmdrbmpnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg0MjExNTIsImV4cCI6MjA5Mzk5NzE1Mn0.LZQESe5Nvuor2apbAdhfHlCr_hBtI-pb6wTEKAK0ldU";
+        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        let usuarioActual = null;
+        let todosLosExpedientes = [];
+        let chartInst = null;
+        let expActivo = null;
+
+        window.onload = async () => {
+            animarCarga(30);
+            const { data: { session } } = await _supabase.auth.getSession();
+            if (session) {
+                const { data: perfiles } = await _supabase.from('usuarios').select('*').eq('id', session.user.id);
+                if (perfiles && perfiles.length) {
+                    usuarioActual = perfiles[0];
+                    animarCarga(100); iniciarApp();
+                } else animarCarga(100);
+            } else animarCarga(100);
+        };
+
+        function togglePassword() {
+            const i = document.getElementById('login-pass');
+            const e = document.getElementById('eye-icon');
+            i.type = i.type === "password" ? "text" : "password";
+            e.innerText = i.type === "password" ? "👁️" : "🔒";
+        }
+
+        function animarCarga(p) {
+            const b = document.getElementById('loading-bar');
+            const c = document.getElementById('loading-bar-container');
+            c.style.display = 'block'; b.style.width = p + '%';
+            if (p >= 100) setTimeout(() => c.style.display = 'none', 800);
+        }
+
+        async function ejecutarLogin() {
+            animarCarga(40);
+            const e = document.getElementById('login-email').value;
+            const p = document.getElementById('login-pass').value;
+            const { data: { user }, error } = await _supabase.auth.signInWithPassword({ email: e, password: p });
+            if (error) { animarCarga(100); return alert("Error de acceso."); }
+            const { data: per } = await _supabase.from('usuarios').select('*').eq('id', user.id);
+            usuarioActual = per[0];
+            animarCarga(100); iniciarApp();
+        }
+
+        function iniciarApp() {
+            document.getElementById('login-screen').classList.add('hidden');
+            document.getElementById('sidebar').classList.remove('hidden');
+            document.getElementById('main-content').classList.remove('hidden');
+            document.getElementById('display-user-name').innerText = usuarioActual.nombre;
+            document.getElementById('display-user-rol').innerText = "ACCESO: " + usuarioActual.rol;
+
+            const menu = document.getElementById('nav-menu');
+            if (usuarioActual.rol === 'MASTER') {
+                document.getElementById('master-only-upload').classList.remove('hidden');
+                menu.innerHTML = `<button onclick="cambiarTab('tab-master-stats')" class="nav-button active">📊 Estadísticas</button>
+                                  <button onclick="cambiarTab('tab-repositorio')" class="nav-button">📁 Repositorio Maestro</button>`;
+                cambiarTab('tab-master-stats');
+            } else {
+                menu.innerHTML = `<button onclick="cambiarTab('tab-repositorio')" class="nav-button active">📁 Repositorio Maestro</button>
+                                  <button onclick="cambiarTab('tab-mis-pacientes')" class="nav-button">💼 Mis Pacientes</button>`;
+                cambiarTab('tab-repositorio');
+            }
+            cargarExpedientes();
+        }
+
+        async function cargarExpedientes() {
+            animarCarga(20);
+            let allData = [], from = 0, to = 999, finished = false;
+            while (!finished) {
+                const { data, error } = await _supabase.from('expedientes').select('*').order('id_gte', { ascending: true }).range(from, to);
+                if (error || data.length === 0) { finished = true; } 
+                else {
+                    allData = allData.concat(data);
+                    if (data.length < 1000) finished = true;
+                    else { from += 1000; to += 1000; }
+                }
+            }
+            todosLosExpedientes = allData;
+            renderizarTabla(todosLosExpedientes);
+            if(usuarioActual.rol === 'MASTER') cargarEstadisticas(todosLosExpedientes);
+            if(document.getElementById('tab-mis-pacientes').style.display !== 'none') renderizarMisPacientes();
+            animarCarga(100);
+        }
+
+        function renderizarTabla(datos) {
+            const b = document.getElementById('lista-expedientes');
+            b.innerHTML = datos.map(exp => `
+                <tr class="border-b border-slate-50">
+                    <td class="p-5 font-black text-gte-orange text-[10px]">${exp.id_gte}</td>
+                    <td class="p-5"><div class="font-bold text-gte-blue text-[11px] uppercase">${exp.nombre_paciente}</div>
+                        <div class="text-[9px] text-slate-400 font-bold uppercase">CI: ${exp.cedula_paciente} - EDAD: ${exp.edad_paciente}</div></td>
+                    <td class="p-5 text-[9px] font-bold text-slate-400 uppercase">${exp.institucion_educativa}</td>
+                    <td class="p-5 text-center"><span class="bg-blue-50 text-gte-blue px-3 py-1 rounded-full font-black text-[10px]">${exp.fase_actual}</span></td>
+                    <td class="p-5 text-[9px] font-black uppercase text-blue-600">${exp.seguimiento || 'Sin Iniciar'}</td>
+                    <td class="p-5 text-right">
+                        ${!exp.psico_asignado_id && usuarioActual.rol === 'PSICOLOGO' ? 
+                            `<button onclick="adoptarCaso('${exp.id_gte}')" class="btn-gte-orange px-4 py-2 text-[9px] uppercase">Adoptar</button>` : 
+                            `<div class="text-[9px] font-bold italic text-slate-400 uppercase">${exp.psico_asignado_nombre || 'Disponible'}</div>`
+                        }
+                    </td>
+                </tr>`).join('');
+        }
+
+        function renderizarMisPacientes() {
+            const mis = todosLosExpedientes.filter(x => x.psico_asignado_id === usuarioActual.id);
+            const body = document.getElementById('lista-mis-pacientes');
+            const estatus = ["1ra Cita", "2da Cita", "3ra Cita", "4ta Cita", "Derivación (SMPNNA)", "Alta Psicológica"];
+            body.innerHTML = mis.map(exp => `
+                <tr class="border-b border-slate-50">
+                    <td class="p-5 font-black text-gte-orange text-[10px]">${exp.id_gte}</td>
+                    <td class="p-5 font-bold text-gte-blue uppercase text-[11px]">${exp.nombre_paciente}</td>
+                    <td class="p-5"><select onchange="actualizarEstatus('${exp.id_gte}', this.value)" class="text-[10px] font-black uppercase p-1 border-2 border-blue-100 rounded-lg outline-none">
+                        ${estatus.map(e => `<option value="${e}" ${exp.seguimiento === e ? 'selected' : ''}>${e}</option>`).join('')}
+                    </select></td>
+                    <td class="p-5 text-right"><button onclick="abrirAtencion('${exp.id_gte}')" class="btn-gte-orange px-4 py-2 text-[9px] uppercase">Portal Atención</button></td>
+                </tr>`).join('');
+        }
+
+        function abrirAtencion(id) {
+            expActivo = id;
+            document.getElementById('modal-demograficos').style.display = 'flex';
+        }
+
+        async function guardarCaracterizacion() {
+            animarCarga(40);
+            const d = {
+                id_gte: expActivo, nombres: document.getElementById('cs-nombres').value.toUpperCase(), apellidos: document.getElementById('cs-apellidos').value.toUpperCase(), 
+                sexo: document.getElementById('cs-sexo').value, fecha_nacimiento: document.getElementById('cs-fecha-nac').value,
+                telefono_contacto: document.getElementById('cs-tlf').value, sector: document.getElementById('cs-sector').value, calle: document.getElementById('cs-calle').value,
+                casa: document.getElementById('cs-casa').value, informante: document.getElementById('cs-informante').value, 
+                madre_nombre: document.getElementById('cs-m-nombre').value, madre_ci: document.getElementById('cs-m-ci').value,
+                madre_edad: parseInt(document.getElementById('cs-m-edad').value) || 0, madre_escolaridad: document.getElementById('cs-m-escolaridad').value,
+                madre_ocupacion: document.getElementById('cs-m-ocupacion').value, madre_vive_con_nino: document.getElementById('cs-m-vive').checked,
+                padre_nombre: document.getElementById('cs-p-nombre').value, padre_ci: document.getElementById('cs-p-ci').value, padre_edad: parseInt(document.getElementById('cs-p-edad').value) || 0,
+                padre_escolaridad: document.getElementById('cs-p-escolaridad').value, padre_ocupacion: document.getElementById('cs-p-ocupacion').value,
+                padre_vive_con_nino: document.getElementById('cs-p-vive').checked
+            };
+            const { error } = await _supabase.from('caracterizacion_social').upsert(d, { onConflict: 'id_gte' });
+            
+            if (!error) {
+                // --- INTEGRACIÓN GOOGLE SHEETS ---
+                const WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbyGN-u86fpo9eHW-0CF6bIeTDl8eVY5FdLwq8tRGNDwpfldt0PxGyVUfz_2JtG91FBw/exec";
+                fetch(WEBHOOK_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    cache: 'no-cache',
+                    body: JSON.stringify(d)
+                }).then(() => console.log("Sincronizado con Google Sheets"));
+                // --------------------------------
+
+                animarCarga(100); lanzarToast("PORTAL 1 SINCRONIZADO");
+                document.getElementById('modal-demograficos').style.display = 'none';
+                document.getElementById('modal-historia').style.display = 'flex';
+            } else alert(error.message);
+        }
+
+        async function guardarHistoriaClinica() {
+            animarCarga(40);
+            const d = {
+                id_gte: expActivo, psico_id: usuarioActual.id, motivo_consulta: document.getElementById('hc-motivo').value, examen_mental: document.getElementById('hc-examen-mental').value,
+                apariencia_fisica: document.getElementById('hc-apariencia').value, entrevista_notas: document.getElementById('hc-notas').value,
+                desarrollo_psicomotor: { nota: document.getElementById('hc-psicomotor').value }, lenguaje: { nota: document.getElementById('hc-lenguaje').value },
+                habitos: { nota: document.getElementById('hc-habitos').value }, escolaridad: { nota: document.getElementById('hc-escolaridad').value }
+            };
+            const { error } = await _supabase.from('historias_clinicas').insert(d);
+            if (!error) { animarCarga(100); lanzarToast("ATENCIÓN FINALIZADA"); cerrarModales(); cargarExpedientes(); }
+            else alert(error.message);
+        }
+
+        async function adoptarCaso(id) {
+            await _supabase.from('expedientes').update({ psico_asignado_id: usuarioActual.id, psico_asignado_nombre: usuarioActual.nombre, seguimiento: '1ra Cita' }).eq('id_gte', id);
+            lanzarToast("CASO ADOPTADO"); cargarExpedientes();
+        }
+
+        async function actualizarEstatus(id, val) {
+            await _supabase.from('expedientes').update({ seguimiento: val }).eq('id_gte', id);
+            lanzarToast("ESTATUS ACTUALIZADO"); cargarExpedientes();
+        }
+
+        function cargarEstadisticas(data) {
+            const peso = { "1ra Cita": 1, "2da Cita": 2, "3ra Cita": 3, "4ta Cita": 4, "Alta Psicológica": 4, "Derivación (SMPNNA)": 1 };
+            
+            // 1. Cálculo de Impacto Acumulado (Citas)
+            const citas = data.reduce((acc, x) => acc + (peso[x.seguimiento] || 0), 0);
+            
+            // 2. Conteo de Psicólogos únicos
+            const psicos = new Set(data.filter(x => x.psico_asignado_id).map(x => x.psico_asignado_id)).size;
+            
+            // 3. NUEVO: Conteo de Derivaciones SMPNNA
+            const derivaciones = data.filter(x => x.seguimiento === "Derivación (SMPNNA)").length;
+
+            // 4. Definición de los KPIs que se mostrarán en los cuadros
+            const kpis = [
+                { t: "Expedientes", v: data.length, c: "text-gte-blue" },
+                { t: "Impacto (Citas)", v: citas, c: "text-gte-orange" },
+                { t: "Especialistas", v: psicos, c: "text-blue-500" },
+                { t: "Derivaciones SMPNNA", v: derivaciones, c: "text-purple-600" }, // <--- Agregado
+                { t: "Fase 3", v: data.filter(x => x.fase_actual == "3").length, c: "text-red-600" },
+                { t: "Fase 2", v: data.filter(x => x.fase_actual == "2").length, c: "text-yellow-600" }
+            ];
+
+            // Renderizado en el grid
+            document.getElementById('kpi-grid').innerHTML = kpis.map(s => `
+                <div class="bg-white p-6 rounded-[25px] border border-slate-100 shadow-sm text-center">
+                    <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">${s.t}</p>
+                    <h3 class="text-3xl font-black ${s.c} mt-2">${s.v}</h3>
+                </div>`).join('');
+
+            renderChart(data);
+        }
+
+        function renderChart(data) {
+            const ctx = document.getElementById('chartInstituciones').getContext('2d');
+            const instMap = {};
+            data.forEach(x => instMap[x.institucion_educativa] = (instMap[x.institucion_educativa] || 0) + 1);
+            const labels = Object.keys(instMap).sort((a,b) => instMap[b] - instMap[a]).slice(0, 10);
+            if(chartInst) chartInst.destroy();
+            chartInst = new Chart(ctx, { type: 'bar', data: { labels, datasets: [{ label: 'Casos', data: labels.map(l => instMap[l]), backgroundColor: '#FFD700', borderRadius: 5 }] }, options: { indexAxis: 'y', maintainAspectRatio: false, plugins: { legend: { display: false } } } });
+        }
+
+        async function procesarCargaMaestra(e) {
+    animarCarga(10);
+    const file = e.target.files[0];
+    const reader = new FileReader();
+    reader.onload = async (evt) => {
+        const wb = XLSX.read(evt.target.result, { type: 'binary' });
+        const raw = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
+        
+        const lotesCompletos = raw.map(f => {
+            const r = {}; Object.keys(f).forEach(k => r[k.trim().toUpperCase()] = f[k]);
+            return { 
+                id_gte: String(r['EXPEDIENTE'] || '').trim(), 
+                fase_actual: String(r['FASE'] || '3').trim(), 
+                nombre_paciente: String(r['NOMBRE Y APELLIDO'] || '').trim().toUpperCase(), 
+                institucion_educativa: String(r['INSTITUCIÓN'] || '').trim().toUpperCase(), 
+                cedula_paciente: String(r['CÉDULA'] || '').trim(), 
+                edad_paciente: parseInt(r['EDAD']) || 0, 
+                seguimiento: 'Sin Iniciar' 
+            };
+        }).filter(x => x.id_gte !== '');
+
+        // PROCESO DE CARGA POR BLOQUES (Para evitar que la nube rebote el archivo)
+        const TAMAÑO_BLOQUE = 500;
+        for (let i = 0; i < lotesCompletos.length; i += TAMAÑO_BLOQUE) {
+            const bloque = lotesCompletos.slice(i, i + TAMAÑO_BLOQUE);
+            const porcentaje = Math.round(((i + bloque.length) / lotesCompletos.length) * 100);
+            
+            animarCarga(porcentaje); // La barra de arriba te dirá cuánto falta real
+            const { error } = await _supabase.from('expedientes').upsert(bloque, { onConflict: 'id_gte' });
+            
+            if (error) {
+                alert("Error en bloque " + i + ": " + error.message);
+                break;
+            }
+        }
+
+        lanzarToast("REPOSITORIO SINCRONIZADO: " + lotesCompletos.length + " REGISTROS");
+        cargarExpedientes();
+    };
+    reader.readAsBinaryString(file);
+}
+
+        function cambiarTab(id) {
+            animarCarga(50);
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.add('hidden'));
+            document.getElementById(id).classList.remove('hidden');
+            document.querySelectorAll('.nav-button').forEach(b => b.classList.remove('active'));
+            if(event) event.currentTarget.classList.add('active');
+            if(id === 'tab-mis-pacientes') renderizarMisPacientes();
+            animarCarga(100);
+        }
+
+        function filtrarTabla() {
+            const b = document.getElementById('buscador-input').value.toLowerCase();
+            renderizarTabla(todosLosExpedientes.filter(x => x.nombre_paciente.toLowerCase().includes(b) || x.id_gte.toLowerCase().includes(b) || x.cedula_paciente.includes(b) || x.institucion_educativa.toLowerCase().includes(b)));
+        }
+
+        function generarPDF() {
+            const area = document.getElementById('reporte-area');
+            html2pdf().set({ margin: 0.5, filename: 'GTE_Reporte.pdf', html2canvas: { scale: 2 }, jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' } }).from(area).save();
+        }
+
+        function cerrarModales() { document.getElementById('modal-demograficos').style.display = 'none'; document.getElementById('modal-historia').style.display = 'none'; }
+        function lanzarToast(m) { const t = document.getElementById('gte-toast'); t.innerText = m; t.style.display = 'block'; setTimeout(() => t.style.display = 'none', 3000); }
+        async function cerrarSesion() { await _supabase.auth.signOut(); location.reload(); }
+    </script>
 </body>
 </html>
